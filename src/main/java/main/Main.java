@@ -8,7 +8,7 @@ public class Main {
 		PRAnalyzer analyzer = new PRAnalyzer("structurizr/java");
 		
 		int indexPR = 0;
-		int indexFile = 34;
+		int indexFile = 6; //34 pour un fichier avec des nouveaux tests; 4 pour tester les méthodes abstraites pour les méthodes modifiées vu que ça marche pas actuellement
 		int indexNewMethod = 0;
 		
 		System.out.println("Nombre de pull request 					: " + analyzer.getNumberOfPullRequests());
@@ -22,7 +22,9 @@ public class Main {
 
 		System.out.println("Nombre de nouveaux test					: " + analyzer.getNumberOfNewTestMethodInFile(indexPR, indexFile));
 		System.out.println("Nom du nouveau test d'index 0				: " + analyzer.getNewTestMethodPrototype(indexPR, indexFile, indexNewMethod));
-		System.out.println("Nombre de test supprimÃ©					: " + analyzer.getNumberOfDeletedTestMethodInFile(indexPR, indexFile));
-
+		System.out.println("Nombre de test supprimÃ©				: " + analyzer.getNumberOfDeletedTestMethodInFile(indexPR, indexFile));
+		
+		System.out.println("Nombre de mÃ©thodes modifiées				: " + analyzer.getNumberOfModifiedMethods(indexPR, indexFile));
+		System.out.println("Nom de la mÃ©thode modifiée d'index 0			: " + analyzer.getModifiedMethodPrototype(indexPR, indexFile, 0));
 	}
 }

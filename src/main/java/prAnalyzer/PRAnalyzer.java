@@ -12,14 +12,15 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
 public class PRAnalyzer {
-
-	static private Pattern methodAdded = Pattern.compile("\\+[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
-	static private Pattern methodDeleted = Pattern.compile("\\-[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
-	static private Pattern commentAdded = Pattern.compile("\\+[ ]*(/\\*([^*]|[\r\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\+[ ]*(//.*)");
-	static private Pattern commentDeleted = Pattern.compile("\\-[ ]*(/\\*([^*]|[\r\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\-[ ]*(//.*)");
-	static private Pattern testMethodAdded = Pattern.compile("\\+ *@Test *[\r\n]*\\+ *[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
-	static private Pattern testMethodDeleted = Pattern.compile("\\- *@Test *[\r\n]*\\- *[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
 	
+	static private Pattern methodAdded = Pattern.compile("\\+[ ]*[\\w<>]* [\\w<>]* [\\w<>\\[\\]]+ [\\w<>_]+ *\\([\\w_, <>\\[\\]]*\\) *[\\w]* [\\w]* *\\{");
+	static private Pattern methodDeleted = Pattern.compile("\\-[ ]*[\\w<>]* [\\w<>]* [\\w<>\\[\\]]+ [\\w<>_]+ *\\([\\w_, <>\\[\\]]*\\) *[\\w]* [\\w]* *\\{");
+	static private Pattern commentAdded = Pattern.compile("\\+[ ]*(/\\*([^*]|[\r\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\+[ ]*(//.*)");
+	static private Pattern commentDeleted = Pattern.compile("\\-[ ]*(/\\*([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\-[ ]*(//.*)");
+	static private Pattern testMethodAdded = Pattern.compile("\\+ *@Test *[\\r\\n]*\\+ *[\\w<>]* [\\w<>]* [\\w<>\\[\\]]+ [\\w<>_]+ *\\([\\w_, <>\\[\\]]*\\) *[\\w]* [\\w]* *\\{");
+	static private Pattern testMethodDeleted = Pattern.compile("\\- *@Test *[\\r\\n]*\\- *[\\w<>]* [\\w<>]* [\\w<>\\[\\]]+ [\\w<>_]+ *\\([\\w_, <>\\[\\]]*\\) *[\\w]* [\\w]* *\\{");
+	static private Pattern methodModified = Pattern.compile("[\\r\\n]+[^\\+\\-] *((public|private|protected|static|final|native|synchronized|abstract|transient)+\\s)+[\\$_\\w\\<\\>\\[\\]]*\\s+[\\$_\\w]+\\([^\\)]*\\)?\\s*\\{?[^\\}]*\\}?");
+
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
 	
@@ -221,6 +222,59 @@ public class PRAnalyzer {
 		return count;
 	}
 	
+	public int getNumberOfModifiedMethods(int pullRequestIndex, int fileIndex) {
+		Matcher m;
+		
+		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+			
+		int count = 0;
+		if(fileDetail.getFilename().endsWith(".java")){
+			m = methodModified.matcher(fileDetail.getPatch()); 
+			while(m.find()) {
+				String method = m.group();
+				String[] methodLines = method.split("\n");
+				for(String l: methodLines) {
+				    if(l.startsWith("+") || l.startsWith("-")) {
+				    	count++;
+				    	break;
+				    }
+				}
+			}
+		}
+		
+		return count;
+	}
+	
+	public String getModifiedMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+		Matcher m;
+		
+		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		
+		int count = 0;
+		if(fileDetail.getFilename().endsWith(".java")){
+			m = methodModified.matcher(fileDetail.getPatch()); 					
+			
+			while(m.find()) { 	
+				
+				boolean isAModifiedMethod = false;
+				String method = m.group();
+				String[] methodLines = method.split("\n");
+				for(String l: methodLines) {
+				    if(l.startsWith("+") || l.startsWith("-")) {
+				    	isAModifiedMethod = true;
+				    	break;
+				    }
+				}
+				
+				if(count == methodIndex && isAModifiedMethod){
+					return methodLines[1].replaceAll("(\\+ *)|( *\\{)", "");
+				}
+				if(isAModifiedMethod) count++;
+			}
+		}
+		
+		return "Error";
+	}
 	
 	/*
 	public void temp(){
