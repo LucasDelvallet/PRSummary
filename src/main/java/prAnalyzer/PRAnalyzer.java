@@ -16,6 +16,8 @@ public class PRAnalyzer {
 	static private Pattern methodAdded = Pattern.compile("\\+[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>]+ *\\([a-zA-Z, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
 	static private Pattern methodDeleted = Pattern.compile("\\-[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>]+ *\\([a-zA-Z, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
 	static private Pattern commentAdded = Pattern.compile("\\+[ ]*(/\\*([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\+[ ]*(//.*)");
+	static private Pattern commentDeleted = Pattern.compile("\\-[ ]*(/\\*([^*]|[\r\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\-[ ]*(//.*)");
+	
 	
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
@@ -123,6 +125,22 @@ public class PRAnalyzer {
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
 			m = commentAdded.matcher(fileDetail.getPatch()); 	
+			while(m.find()) { 		
+				count++;
+			}
+		}
+		
+		return count;
+	}
+	
+	public int getNumberOfDeletedComments(int pullRequestIndex, int fileIndex){
+		Matcher m;
+		
+		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		
+		int count = 0;
+		if(fileDetail.getFilename().endsWith(".java")){
+			m = commentDeleted.matcher(fileDetail.getPatch()); 	
 			while(m.find()) { 		
 				count++;
 			}
