@@ -8,7 +8,7 @@ public class Main {
 		PRAnalyzer analyzer = new PRAnalyzer("structurizr/java");
 		
 		int indexPR = 0;
-		int indexFile = 10;
+		int indexFile = 34;
 		int indexNewMethod = 0;
 		
 		System.out.println("Nombre de pull request 					: " + analyzer.getNumberOfPullRequests());
@@ -20,15 +20,9 @@ public class Main {
 		System.out.println("Nombre de commentaire ajouté				: " + analyzer.getNumberOfNewComments(indexPR, indexFile));
 		System.out.println("Nombre de commentaire supprimé				: " + analyzer.getNumberOfDeletedComments(indexPR, indexFile));
 
+		System.out.println("Nombre de nouveaux test					: " + analyzer.getNumberOfNewTestMethodInFile(indexPR, indexFile));
+		System.out.println("Nom du nouveau test d'index 0				: " + analyzer.getNewTestMethodPrototype(indexPR, indexFile, indexNewMethod));
+		System.out.println("Nombre de test supprimé					: " + analyzer.getNumberOfDeletedTestMethodInFile(indexPR, indexFile));
+
 	}
 }
-
-//	Regex pour chopper différents trucs (pour les foutre dans des string il faut doubler les \\:
-//
-//	Les méthodes ajoutées ou supprimées :
-//		\+[ ]*[a-zA-Z]* [a-zA-Z]* [a-zA-Z]+ [a-zA-Z]+ *\([a-zA-Z, ]*\) *\{
-//		\-[ ]*[a-zA-Z]* [a-zA-Z]* [a-zA-Z]+ [a-zA-Z]+ *\([a-zA-Z, ]*\) *\{
-//	
-//	Détecter les commentaires ajoutés ou supprimés :
-//		\+[ ]*(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|\+[ ]*(//.*)
-//		\-[ ]*(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|\-[ ]*(//.*)

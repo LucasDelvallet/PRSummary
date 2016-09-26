@@ -13,11 +13,12 @@ import org.kohsuke.github.GitHub;
 
 public class PRAnalyzer {
 
-	static private Pattern methodAdded = Pattern.compile("\\+[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>]+ *\\([a-zA-Z, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
-	static private Pattern methodDeleted = Pattern.compile("\\-[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>]+ *\\([a-zA-Z, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
-	static private Pattern commentAdded = Pattern.compile("\\+[ ]*(/\\*([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\+[ ]*(//.*)");
+	static private Pattern methodAdded = Pattern.compile("\\+[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
+	static private Pattern methodDeleted = Pattern.compile("\\-[ ]*[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
+	static private Pattern commentAdded = Pattern.compile("\\+[ ]*(/\\*([^*]|[\r\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\+[ ]*(//.*)");
 	static private Pattern commentDeleted = Pattern.compile("\\-[ ]*(/\\*([^*]|[\r\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/)|\\-[ ]*(//.*)");
-	
+	static private Pattern testMethodAdded = Pattern.compile("\\+ *@Test *[\r\n]*\\+ *[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
+	static private Pattern testMethodDeleted = Pattern.compile("\\- *@Test *[\r\n]*\\- *[a-zA-Z<>]* [a-zA-Z<>]* [a-zA-Z<>]+ [a-zA-Z<>_]+ *\\([a-zA-Z_, <>]*\\) *[a-zA-Z]* [a-zA-Z]* *\\{");
 	
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
@@ -117,6 +118,77 @@ public class PRAnalyzer {
 		return "Error";
 	}
 	
+	public int getNumberOfNewTestMethodInFile(int pullRequestIndex, int fileIndex){
+		Matcher m;
+		
+		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+			
+		int count = 0;
+		if(fileDetail.getFilename().endsWith(".java")){
+			m = testMethodAdded.matcher(fileDetail.getPatch()); 
+			while(m.find()) { 		
+				count++;
+			}
+		}
+		
+		return count;
+	}
+	
+	public String getNewTestMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+		Matcher m;
+		
+		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		
+		int count = 0;
+		if(fileDetail.getFilename().endsWith(".java")){
+			m = testMethodAdded.matcher(fileDetail.getPatch()); 					
+			
+			while(m.find()) { 		
+				if(count == methodIndex){
+					return m.group().replaceAll("(\\+ *)|( *\\{)|(@Test)|(\r)|(\n)", "");
+				}
+				count++;
+			}
+		}
+		
+		return "Error";
+	}
+	
+	public int getNumberOfDeletedTestMethodInFile(int pullRequestIndex, int fileIndex){
+		Matcher m;
+		
+		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		
+		int count = 0;
+		if(fileDetail.getFilename().endsWith(".java")){
+			m = testMethodDeleted.matcher(fileDetail.getPatch()); 	
+			while(m.find()) { 		
+				count++;
+			}
+		}
+		
+		return count;
+	}
+	
+	public String getDeletedTestMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+		Matcher m;
+		
+		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		
+		if(fileDetail.getFilename().endsWith(".java")){
+			m = testMethodDeleted.matcher(fileDetail.getPatch()); 					
+			int count = 0;
+			while(m.find()) { 	
+				if(count == methodIndex){
+					return m.group().replaceAll("(\\+ *)|( *\\{)|(@Test)|(\r)|(\n)", "");
+				}
+				count++;
+			}
+		}
+		
+		return "Error";
+	}
+	
 	public int getNumberOfNewComments(int pullRequestIndex, int fileIndex){
 		Matcher m;
 		
@@ -150,6 +222,7 @@ public class PRAnalyzer {
 	}
 	
 	
+	/*
 	public void temp(){
 		
 		Matcher m;
@@ -188,6 +261,7 @@ public class PRAnalyzer {
 			}
 		}
 	}
+	*/
 	
 	
 }
