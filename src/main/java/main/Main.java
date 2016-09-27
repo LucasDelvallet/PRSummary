@@ -8,7 +8,7 @@ public class Main {
 		PRAnalyzer analyzer = new PRAnalyzer("structurizr/java");
 		
 		int indexPR = 0;
-		int indexFile = 6; //34 pour un fichier avec des nouveaux tests; 4 pour tester les m�thodes abstraites pour les m�thodes modifi�es vu que �a marche pas actuellement
+		int indexFile = 6; //34 pour un fichier avec des nouveaux tests; 4 pour tester les méthodes abstraites pour les méthodes modifiées vu que ça marche pas actuellement
 		int indexNewMethod = 0;
 		
 		System.out.println("Nombre de pull request 					: " + analyzer.GetNumberOfPullRequests());
@@ -57,26 +57,17 @@ public class Main {
 		
 		System.out.println("\r\n===> Exemple 2 : ");
 		
-		int nbNewMethode = 0;
-		int nbNewTestMethode = 0;
+		int nbNewMethod = 0;
+		int nbNewTestMethod = 0;
 		for(int i = 0; i < analyzer.GetNumberOfFiles(indexPR); i++){
-			System.out.print(".");
-			nbNewMethode += analyzer.GetNumberOfNewMethodInFile(indexPR, i);
-			nbNewTestMethode += analyzer.GetNumberOfNewTestInFile(indexPR, i);
+			nbNewMethod += analyzer.GetNumberOfNewMethodInFile(indexPR, i);
+			nbNewTestMethod += analyzer.GetNumberOfNewTestInFile(indexPR, i);
 		}
-		System.out.println("");
 		
-		System.out.println("Nombre de nouvelles méthodes, hors test, ajoutée : " + (nbNewMethode - nbNewTestMethode));
-		System.out.println("Nombre de test ajouté : " + nbNewTestMethode);
-		if((nbNewMethode - nbNewTestMethode) > nbNewTestMethode){
+		System.out.println("Nombre de nouvelles méthodes, hors test, ajoutée : " + (nbNewMethod - nbNewTestMethod));
+		System.out.println("Nombre de test ajouté : " + nbNewTestMethod);
+		if((nbNewMethod - nbNewTestMethod) > nbNewTestMethod){
 			System.out.println("A priori il n'y a pas assez de tests pour les nouvelles méthodes.");
 		}
-		
-		
-		
-		
-		
-		
-	
 	}
 }
