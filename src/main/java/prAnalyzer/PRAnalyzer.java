@@ -278,4 +278,8 @@ public class PRAnalyzer {
 		return "Error";
 	}
 	
+	public void Nothing(){
+		//Nothing.	
+	}
+	
 }
