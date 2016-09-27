@@ -1,9 +1,9 @@
 package prAnalyzer;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
@@ -16,6 +16,7 @@ public class PRAnalyzer {
 
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
+	private HashMap<GHPullRequest, List<GHPullRequestFileDetail>> filesDetails;
 	
 	public PRAnalyzer(String repoName){
 		try {
@@ -24,9 +25,17 @@ public class PRAnalyzer {
 			repo = github.getRepository(repoName);
 			
 			pullRequests = repo.getPullRequests(GHIssueState.OPEN);
+			filesDetails = new HashMap<GHPullRequest, List<GHPullRequestFileDetail>>();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private List<GHPullRequestFileDetail> GetFiles(GHPullRequest PR){
+		if(!filesDetails.containsKey(PR)){
+			filesDetails.put(PR, PR.listFiles().asList());
+		}
+		return filesDetails.get(PR);
 	}
 	
 	public int GetNumberOfPullRequests(){
@@ -34,17 +43,17 @@ public class PRAnalyzer {
 	}
 	
 	public int GetNumberOfFiles(int pullRequestIndex){
-		return pullRequests.get(pullRequestIndex).listFiles().asList().size();
+		return GetFiles(pullRequests.get(pullRequestIndex)).size();
 	}
 	
 	public String GetFileName(int pullRequestIndex, int fileIndex){
-		return pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex).getFilename();
+		return GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex).getFilename();
 	}
 	
 	public int GetNumberOfNewMethodInFile(int pullRequestIndex, int fileIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 			
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -60,7 +69,7 @@ public class PRAnalyzer {
 	public String GetNewMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -80,7 +89,7 @@ public class PRAnalyzer {
 	public int GetNumberOfDeletedMethodInFile(int pullRequestIndex, int fileIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -96,7 +105,7 @@ public class PRAnalyzer {
 	public String GetDeletedMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		if(fileDetail.getFilename().endsWith(".java")){
 			m = Regex.GetMethodDeletedPattern().matcher(fileDetail.getPatch()); 					
@@ -115,7 +124,7 @@ public class PRAnalyzer {
 	public int GetNumberOfNewTestInFile(int pullRequestIndex, int fileIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 			
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -131,7 +140,7 @@ public class PRAnalyzer {
 	public String GetNewTestPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -151,7 +160,7 @@ public class PRAnalyzer {
 	public int GetNumberOfDeletedTestInFile(int pullRequestIndex, int fileIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -167,7 +176,7 @@ public class PRAnalyzer {
 	public String GetDeletedTestPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		if(fileDetail.getFilename().endsWith(".java")){
 			m = Regex.GetTestDeletedPattern().matcher(fileDetail.getPatch()); 					
@@ -186,7 +195,7 @@ public class PRAnalyzer {
 	public int GetNumberOfNewCommentsInFile(int pullRequestIndex, int fileIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -202,7 +211,7 @@ public class PRAnalyzer {
 	public int GetNumberOfDeletedCommentsInFile(int pullRequestIndex, int fileIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -218,7 +227,7 @@ public class PRAnalyzer {
 	public int GetNumberOfModifiedMethodsInFile(int pullRequestIndex, int fileIndex) {
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 			
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -241,7 +250,7 @@ public class PRAnalyzer {
 	public String GetModifiedMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
 		Matcher m;
 		
-		GHPullRequestFileDetail fileDetail = pullRequests.get(pullRequestIndex).listFiles().asList().get(fileIndex);
+		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 		
 		int count = 0;
 		if(fileDetail.getFilename().endsWith(".java")){
@@ -268,47 +277,5 @@ public class PRAnalyzer {
 		
 		return "Error";
 	}
-	
-	/*
-	public void temp(){
-		
-		Matcher m;
-		
-		for(GHPullRequest PR : pullRequests){
-			System.out.println("Titre : " + PR.getTitle());				
-
-			System.out.println("	Liste des fichiers d'extension .java modifiés/ajoutés/supprimés : ");
-			for(GHPullRequestFileDetail filesDetail : PR.listFiles()){
-				String fileName = filesDetail.getFilename();
-				if(fileName.endsWith(".java")){
-					System.out.println("		Nom du fichier : " + fileName);
-					
-					m = methodAdded.matcher(filesDetail.getPatch()); 					//On donne le pattern et le string
-					System.out.println("			Méthodes ajoutées/modifiées : "); 	//On indique ce qu'on va afficher
-					while(m.find()) { 													//On trouve la prochaine chaine qui satisfait le pattern
-						String prototype = m.group().replaceAll("(\\+ *)|( *\\{)", ""); //On retire les caractères inutiles qui ne font pas parti du prototype de la méthode
-						System.out.println("				" + prototype); 			//On affiche la méthode.
-					}
-					
-					//On recommence pour les méthodes supprimées
-					m = methodDeleted.matcher(filesDetail.getPatch());
-					System.out.println("			Méthodes supprimées : ");
-					while(m.find()) {
-						String prototype = m.group().replaceAll("(\\- *)|( *\\{)", "");
-						System.out.println("				" + prototype);
-					}
-					
-					//On compte le nombre de commentaires ajoutés et on le montre
-					m = commentAdded.matcher(filesDetail.getPatch());
-					int count = 0;
-					while (m.find())
-					    count++;
-					System.out.println("			Nombre de commentaires ajoutés : " + count);
-				}
-			}
-		}
-	}
-	*/
-	
 	
 }

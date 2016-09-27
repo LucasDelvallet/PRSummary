@@ -30,8 +30,32 @@ public class Main {
 	
 		
 		
-		System.out.println("============ EXEMPLE CONCRET ============");
-		System.out.println("===> Exemple 1 : ");
+		System.out.println("\r\n============ EXEMPLE CONCRET ============");
+		System.out.println("\r\n===> Exemple 1 : ");
+		int numberOfFileToDisplay = 5;
+		int numberOfFileDisplayed = 0;
+		int numberOfFileNotDisplayed = 0;
+		System.out.println("Fichier(s) java modifié(s) :");
+		
+
+		for(int i = 0; i < analyzer.GetNumberOfFiles(indexPR); i++){
+			String fileName = analyzer.GetFileName(indexPR, i);
+			if(fileName.endsWith(".java")){
+				if(numberOfFileDisplayed < numberOfFileToDisplay){
+					System.out.println("    " + fileName);
+					numberOfFileDisplayed++;
+				}else{
+					numberOfFileNotDisplayed++;
+				}
+			}
+		}
+
+		if(numberOfFileToDisplay < numberOfFileNotDisplayed){
+			System.out.println("Et " + (numberOfFileNotDisplayed-numberOfFileToDisplay) + " autre(s) fichier(s)." );
+		}
+		
+		
+		System.out.println("\r\n===> Exemple 2 : ");
 		
 		int nbNewMethode = 0;
 		int nbNewTestMethode = 0;
@@ -43,10 +67,11 @@ public class Main {
 		System.out.println("");
 		
 		System.out.println("Nombre de nouvelles méthodes, hors test, ajoutée : " + (nbNewMethode - nbNewTestMethode));
-		System.out.println("Nombre de nouvelles méthodes de test ajoutée : " + nbNewTestMethode);
+		System.out.println("Nombre de test ajouté : " + nbNewTestMethode);
 		if((nbNewMethode - nbNewTestMethode) > nbNewTestMethode){
-			System.out.println("Il n'y a a priori pas assez de tests pour les nouvelles méthodes.");
+			System.out.println("A priori il n'y a pas assez de tests pour les nouvelles méthodes.");
 		}
+		
 		
 		
 		
