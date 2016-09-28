@@ -13,7 +13,6 @@ import org.kohsuke.github.GitHub;
 
 public class PRAnalyzer {
 	
-
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
 	private HashMap<GHPullRequest, List<GHPullRequestFileDetail>> filesDetails;
