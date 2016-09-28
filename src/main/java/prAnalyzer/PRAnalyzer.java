@@ -45,7 +45,7 @@ public class PRAnalyzer {
 					if (new Date().getTime() - PR.getCreatedAt().getTime() <= 10000) {
 						System.out.println("	New PR detected : adding bot comment");
 						pullRequestIndex = cpt;
-						String msg = "======\r\nThis is an automatic message\r\n======" ;
+						String msg = "------This is an automatic message------\r\n\r\n" ;
 						msg += bot.BuildMessage(this);
 						PR.comment(msg);
 					}else{
