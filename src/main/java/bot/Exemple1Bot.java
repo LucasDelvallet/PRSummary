@@ -21,7 +21,7 @@ public class Exemple1Bot extends Bot {
 		
 		int nbCommit = analyzer.GetNumberOfCommit();
 		if(nbCommit > 1){
-			msg += "You have pushed more than one commit. When you finish editing, squash your commits into one.";
+			msg += "You have pushed more than one commit. When you finish editing, squash your commits into one.\r\n";
 		}
 		
 		msg += "Number of new method, except test : " + (nbNewMethod - nbNewTestMethod) + "\r\n";
