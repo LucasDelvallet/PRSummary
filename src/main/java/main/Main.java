@@ -1,11 +1,16 @@
 package main;
 
-import prAnalyzer.PRAnalyzer;
+import bot.Exemple1Bot;
 
 public class Main {
 
 	public static void main(String[] args) {
-		PRAnalyzer analyzer = new PRAnalyzer("structurizr/java");
+		
+		
+		Exemple1Bot botty = new Exemple1Bot("LucasDelvallet/PRSummary");
+		botty.Start();
+		
+		/*PRAnalyzer analyzer = new PRAnalyzer("LucasDelvallet/PRSummary");
 		
 		int indexPR = 0;
 		int indexFile = 6; //34 pour un fichier avec des nouveaux tests; 4 pour tester les méthodes abstraites pour les méthodes modifiées vu que ça marche pas actuellement
@@ -68,6 +73,6 @@ public class Main {
 		System.out.println("Nombre de test ajouté : " + nbNewTestMethod);
 		if((nbNewMethod - nbNewTestMethod) > nbNewTestMethod){
 			System.out.println("A priori il n'y a pas assez de tests pour les nouvelles méthodes.");
-		}
+		}*/
 	}
 }
