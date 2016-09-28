@@ -1,6 +1,7 @@
 package prAnalyzer;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -11,12 +12,15 @@ import org.kohsuke.github.GHPullRequestFileDetail;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
+import bot.Bot;
+
 public class PRAnalyzer {
 	
 
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
 	private HashMap<GHPullRequest, List<GHPullRequestFileDetail>> filesDetails;
+	private int pullRequestIndex = -1;
 	
 	public PRAnalyzer(String repoName){
 		try {
@@ -31,6 +35,39 @@ public class PRAnalyzer {
 		}
 	}
 	
+	public void Start(Bot bot){
+		while(true){
+			try {
+			
+
+				System.out.println("Fetching PRs.");
+				pullRequests = repo.getPullRequests(GHIssueState.OPEN);
+				int cpt = 0;
+				for(GHPullRequest PR : pullRequests){
+					//int tA = (new Date().getTime() - PR.getCreatedAt().getTime());
+					//int tB = 10*60*1000;
+					//System.out.println("TEST DUREE = " + );
+					if (new Date().getTime() - PR.getCreatedAt().getTime() <= 10000) {
+						System.out.println("	New PR detected : adding bot comment");
+						pullRequestIndex = cpt;
+						String msg = bot.BuildMessage(this);
+						PR.comment(msg);
+					}else{
+						System.out.println("	Old PR detected. Nothing to do.");
+					}
+					cpt++;
+				}
+				
+				System.out.println("Waiting 10 secs.");
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private List<GHPullRequestFileDetail> GetFiles(GHPullRequest PR){
 		if(!filesDetails.containsKey(PR)){
 			filesDetails.put(PR, PR.listFiles().asList());
@@ -42,15 +79,15 @@ public class PRAnalyzer {
 		return pullRequests.size();
 	}
 	
-	public int GetNumberOfFiles(int pullRequestIndex){
+	public int GetNumberOfFiles(){
 		return GetFiles(pullRequests.get(pullRequestIndex)).size();
 	}
 	
-	public String GetFileName(int pullRequestIndex, int fileIndex){
+	public String GetFileName(int fileIndex){
 		return GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex).getFilename();
 	}
 	
-	public int GetNumberOfNewMethodInFile(int pullRequestIndex, int fileIndex){
+	public int GetNumberOfNewMethodInFile(int fileIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -66,7 +103,7 @@ public class PRAnalyzer {
 		return count;
 	}
 	
-	public String GetNewMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+	public String GetNewMethodPrototype(int fileIndex, int methodIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -86,7 +123,7 @@ public class PRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfDeletedMethodInFile(int pullRequestIndex, int fileIndex){
+	public int GetNumberOfDeletedMethodInFile(int fileIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -102,7 +139,7 @@ public class PRAnalyzer {
 		return count;
 	}
 	
-	public String GetDeletedMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+	public String GetDeletedMethodPrototype(int fileIndex, int methodIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -121,7 +158,7 @@ public class PRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfNewTestInFile(int pullRequestIndex, int fileIndex){
+	public int GetNumberOfNewTestInFile(int fileIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -137,7 +174,7 @@ public class PRAnalyzer {
 		return count;
 	}
 	
-	public String GetNewTestPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+	public String GetNewTestPrototype(int fileIndex, int methodIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -157,7 +194,7 @@ public class PRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfDeletedTestInFile(int pullRequestIndex, int fileIndex){
+	public int GetNumberOfDeletedTestInFile(int fileIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -173,7 +210,7 @@ public class PRAnalyzer {
 		return count;
 	}
 	
-	public String GetDeletedTestPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+	public String GetDeletedTestPrototype(int fileIndex, int methodIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -192,7 +229,7 @@ public class PRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfNewCommentsInFile(int pullRequestIndex, int fileIndex){
+	public int GetNumberOfNewCommentsInFile(int fileIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -208,7 +245,7 @@ public class PRAnalyzer {
 		return count;
 	}
 	
-	public int GetNumberOfDeletedCommentsInFile(int pullRequestIndex, int fileIndex){
+	public int GetNumberOfDeletedCommentsInFile(int fileIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -224,7 +261,7 @@ public class PRAnalyzer {
 		return count;
 	}
 	
-	public int GetNumberOfModifiedMethodsInFile(int pullRequestIndex, int fileIndex) {
+	public int GetNumberOfModifiedMethodsInFile(int fileIndex) {
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
@@ -247,7 +284,7 @@ public class PRAnalyzer {
 		return count;
 	}
 	
-	public String GetModifiedMethodPrototype(int pullRequestIndex, int fileIndex, int methodIndex){
+	public String GetModifiedMethodPrototype(int fileIndex, int methodIndex){
 		Matcher m;
 		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
