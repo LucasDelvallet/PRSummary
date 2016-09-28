@@ -1,7 +1,6 @@
 package main;
 
 import bot.Exemple1Bot;
-import prAnalyzer.PRAnalyzer;
 
 public class Main {
 

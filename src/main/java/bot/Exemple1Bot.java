@@ -19,10 +19,10 @@ public class Exemple1Bot extends Bot {
 			nbNewTestMethod += analyzer.GetNumberOfNewTestInFile(i);
 		}
 		
-		msg += "Nombre de nouvelles méthodes, hors test, ajoutée : " + (nbNewMethod - nbNewTestMethod) + "\r\n";
-		msg += "Nombre de test ajouté : " + nbNewTestMethod + "\r\n";
+		msg += "Number of new method, except test : " + (nbNewMethod - nbNewTestMethod) + "\r\n";
+		msg += "Number of new test : " + nbNewTestMethod + "\r\n";
 		if((nbNewMethod - nbNewTestMethod) > nbNewTestMethod){
-			msg += "A priori il n'y a pas assez de tests pour les nouvelles méthodes." + "\r\n";
+			msg += "There's less new tests than new method. It may be a problem." + "\r\n";
 		}
 		
 		return msg;

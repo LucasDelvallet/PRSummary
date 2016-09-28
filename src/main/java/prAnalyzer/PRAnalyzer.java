@@ -38,19 +38,15 @@ public class PRAnalyzer {
 	public void Start(Bot bot){
 		while(true){
 			try {
-			
-
 				System.out.println("Fetching PRs.");
 				pullRequests = repo.getPullRequests(GHIssueState.OPEN);
 				int cpt = 0;
 				for(GHPullRequest PR : pullRequests){
-					//int tA = (new Date().getTime() - PR.getCreatedAt().getTime());
-					//int tB = 10*60*1000;
-					//System.out.println("TEST DUREE = " + );
 					if (new Date().getTime() - PR.getCreatedAt().getTime() <= 10000) {
 						System.out.println("	New PR detected : adding bot comment");
 						pullRequestIndex = cpt;
-						String msg = bot.BuildMessage(this);
+						String msg = "======\r\nThis is an automatic message\r\n======" ;
+						msg += bot.BuildMessage(this);
 						PR.comment(msg);
 					}else{
 						System.out.println("	Old PR detected. Nothing to do.");
