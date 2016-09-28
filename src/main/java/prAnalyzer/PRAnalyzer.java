@@ -16,7 +16,6 @@ import bot.Bot;
 
 public class PRAnalyzer {
 	
-
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
 	private HashMap<GHPullRequest, List<GHPullRequestFileDetail>> filesDetails;
@@ -315,6 +314,10 @@ public class PRAnalyzer {
 		}
 		
 		return "Error";
+	}
+	
+	public void Nothing(){
+		//Nothing.	
 	}
 	
 }
