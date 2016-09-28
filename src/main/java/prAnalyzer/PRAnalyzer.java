@@ -63,12 +63,18 @@ public class PRAnalyzer {
 			}
 		}
 	}
+	
+
 
 	private List<GHPullRequestFileDetail> GetFiles(GHPullRequest PR){
 		if(!filesDetails.containsKey(PR)){
 			filesDetails.put(PR, PR.listFiles().asList());
 		}
 		return filesDetails.get(PR);
+	}
+	
+	public int GetNumberOfCommit(){
+		return pullRequests.get(pullRequestIndex).listCommits().asList().size();
 	}
 	
 	public int GetNumberOfPullRequests(){

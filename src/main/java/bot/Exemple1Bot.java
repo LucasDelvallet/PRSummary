@@ -19,8 +19,14 @@ public class Exemple1Bot extends Bot {
 			nbNewTestMethod += analyzer.GetNumberOfNewTestInFile(i);
 		}
 		
+		int nbCommit = analyzer.GetNumberOfCommit();
+		if(nbCommit > 1){
+			msg += "You have pushed more than one commit. When you finish editing, squash your commits into one.";
+		}
+		
 		msg += "Number of new method, except test : " + (nbNewMethod - nbNewTestMethod) + "\r\n";
 		msg += "Number of new test : " + nbNewTestMethod + "\r\n";
+		
 		if((nbNewMethod - nbNewTestMethod) > nbNewTestMethod){
 			msg += "There's less new tests than new method. It may be a problem." + "\r\n";
 		}
