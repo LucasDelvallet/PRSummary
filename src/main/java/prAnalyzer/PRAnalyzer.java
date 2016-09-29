@@ -42,9 +42,9 @@ public class PRAnalyzer {
 				pullRequests = repo.getPullRequests(GHIssueState.OPEN);
 				int cpt = 0;
 				for(GHPullRequest PR : pullRequests){
+					pullRequestIndex = cpt;
 					if (new Date().getTime() - PR.getCreatedAt().getTime() <= 10000) {
 						System.out.println("	New PR detected : adding bot comment");
-						pullRequestIndex = cpt;
 						String msg = "------This is an automatic message------\r\n\r\n" ;
 						msg += bot.BuildMessage(this);
 						PR.comment(msg);
@@ -71,6 +71,24 @@ public class PRAnalyzer {
 			filesDetails.put(PR, PR.listFiles().asList());
 		}
 		return filesDetails.get(PR);
+	}
+	
+	public void ClosePR(){
+		try {
+			if(pullRequests.get(pullRequestIndex).getState() != GHIssueState.CLOSED){
+				pullRequests.get(pullRequestIndex).close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public String GetSourceBranchName(){
+		return pullRequests.get(pullRequestIndex).getHead().getLabel().split(":")[1];
+	}
+	
+	public String GetTargetBranchName(){
+		return pullRequests.get(pullRequestIndex).getBase().getLabel().split(":")[1];
 	}
 	
 	public int GetNumberOfCommit(){
