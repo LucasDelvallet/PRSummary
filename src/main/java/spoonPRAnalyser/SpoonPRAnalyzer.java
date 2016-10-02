@@ -19,8 +19,15 @@ import org.kohsuke.github.GHPullRequestFileDetail;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
+import com.github.gumtreediff.actions.model.Action;
+
 import gumtree.spoon.AstComparator;
 import gumtree.spoon.diff.Diff;
+import gumtree.spoon.diff.operations.InsertOperation;
+import gumtree.spoon.diff.operations.Operation;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtMethod;
+import spoon.support.reflect.declaration.CtMethodImpl;
 import spoonBot.SpoonBot;
 
 public class SpoonPRAnalyzer {
@@ -119,9 +126,7 @@ public class SpoonPRAnalyzer {
 		return GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex).getFilename();
 	}
 	
-	public int GetNumberOfNewMethodInFile(int fileIndex){
-		Matcher m;
-		
+	public int GetNumberOfNewMethodInFile(int fileIndex){		
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 
 		String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + GetTargetBranchName() + "/" + fileDetail.getFilename(); 
@@ -131,9 +136,9 @@ public class SpoonPRAnalyzer {
 		File fileBefore = null, fileAfter = null;
 		try {
 			fileBefore = File.createTempFile("before", ".java");
-			//fileBefore.deleteOnExit();
+			fileBefore.deleteOnExit();
 			fileAfter = File.createTempFile("after", ".java");
-			//fileAfter.deleteOnExit();
+			fileAfter.deleteOnExit();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -155,12 +160,27 @@ public class SpoonPRAnalyzer {
 		int count = 0;
 		
 		AstComparator diff = new AstComparator();
-		Diff difference = null;
+		Diff differences = null;
 		try {
-			difference = diff.compare(fileBefore, fileAfter);
+			differences = diff.compare(fileBefore, fileAfter);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		List<Operation> actions = differences.getRootOperations();
+		
+		for(Operation a : actions) {
+			CtElement test = a.getNode();
+			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) count++;
+		}
+		
+		//Liste d'opérations
+		//UpdateOperation
+		//InsertOperation
+		//DeleteOperation
+		//MoveOperation
+		
+
 		
 		return count;
 	}

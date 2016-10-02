@@ -23,12 +23,10 @@ public class Main {
 		
 		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/spoon");
 		
-		int indexPR = 0;
-		int indexFile = 0;
-		int indexNewMethod = 0;
+		int indexPR = 1;
 		
 		System.out.println("Nombre de pull request 					: " + analyzer.GetNumberOfPullRequests());
-		System.out.println("New methodes in file 0			: " + analyzer.GetNumberOfNewMethodInFile(indexPR));
+		System.out.println("New methodes in file 1			: " + analyzer.GetNumberOfNewMethodInFile(indexPR));
 		
 		
 		/*PRAnalyzer analyzer = new PRAnalyzer("LucasDelvallet/PRSummary");
