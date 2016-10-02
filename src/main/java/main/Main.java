@@ -1,14 +1,35 @@
 package main;
 
+import java.io.File;
+
+import com.github.gumtreediff.tree.ITree;
+
 import bot.Exemple1Bot;
+import gumtree.spoon.AstComparator;
+import gumtree.spoon.diff.DiffImpl;
+import spoonBot.Exemple1SpoonBot;
+import spoonPRAnalyser.SpoonPRAnalyzer;
 
 public class Main {
 
 	public static void main(String[] args) {
 		
 		
-		Exemple1Bot botty = new Exemple1Bot("LucasDelvallet/PRSummary");
-		botty.Start();
+		//Exemple1Bot botty = new Exemple1Bot("LucasDelvallet/PRSummary");
+		//botty.Start();
+		
+		//Exemple1SpoonBot botbotbibot = new Exemple1SpoonBot("LucasDelvallet/PRSummary");
+		//botbotbibot.Start();
+		
+		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/spoon");
+		
+		int indexPR = 0;
+		int indexFile = 0;
+		int indexNewMethod = 0;
+		
+		System.out.println("Nombre de pull request 					: " + analyzer.GetNumberOfPullRequests());
+		System.out.println("New methodes in file 0			: " + analyzer.GetNumberOfNewMethodInFile(indexPR));
+		
 		
 		/*PRAnalyzer analyzer = new PRAnalyzer("LucasDelvallet/PRSummary");
 		
