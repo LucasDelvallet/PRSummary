@@ -23,7 +23,7 @@ public class Main {
 		
 		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/spoon");
 		
-		int fileIndex = 1, indexMethod = 0;
+		int fileIndex = 0, indexMethod = 0;
 		
 		System.out.println("Nombre de pull request 					: " + analyzer.GetNumberOfPullRequests());
 		System.out.println("Nom du fichier d'index 1 				: " + analyzer.GetFileName(fileIndex));

@@ -409,8 +409,11 @@ public class SpoonPRAnalyzer {
 		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
-			if(a.getNode() instanceof CtCommentImpl && a instanceof InsertOperation) {
-				if(a.getNode().getComments().size() > 0) count++;				
+			if(a instanceof InsertOperation) {
+				if(a.getNode() != null) {					
+					if(a.getNode().getComments().size() > 0) 
+						count++;
+				}
 			}
 		}
 		
@@ -422,8 +425,10 @@ public class SpoonPRAnalyzer {
 		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
-			if(a.getNode() instanceof CtCommentImpl && a instanceof DeleteOperation) {
-				if(a.getNode().getComments().size() > 0) count++;	
+			if(a instanceof DeleteOperation) {
+				if(a.getNode() != null)
+					if(a.getNode().getComments().size() > 0) 
+						count++;	
 			}
 		}
 		
@@ -438,8 +443,8 @@ public class SpoonPRAnalyzer {
 			CtElement parent = a.getNode();
 			
 			while(!(parent instanceof CtMethodImpl)) {
-				parent = parent.getParent();
 				if(parent == null) break;
+				parent = parent.getParent();				
 			}
 			
 			if(parent == null) continue;	
@@ -462,8 +467,8 @@ public class SpoonPRAnalyzer {
  			CtElement parent = a.getNode();
 			
 			while(!(parent instanceof CtMethodImpl)) {
-				parent = parent.getParent();
-				if(parent == null) break;
+					if(parent == null) break;
+					parent = parent.getParent();
 			}
 			
 			if(parent == null) continue;			
