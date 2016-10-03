@@ -1,17 +1,17 @@
 package spoonPRAnalyser;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
@@ -19,15 +19,12 @@ import org.kohsuke.github.GHPullRequestFileDetail;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
-import com.github.gumtreediff.actions.model.Action;
-
 import gumtree.spoon.AstComparator;
 import gumtree.spoon.diff.Diff;
-import gumtree.spoon.diff.operations.InsertOperation;
-import gumtree.spoon.diff.operations.Operation;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
-import spoon.support.reflect.declaration.CtMethodImpl;
+import gumtree.spoon.diff.operations.*;
+import spoon.reflect.declaration.*;
+import spoon.support.reflect.code.*;
+import spoon.support.reflect.declaration.*;
 import spoonBot.SpoonBot;
 
 public class SpoonPRAnalyzer {
@@ -126,7 +123,7 @@ public class SpoonPRAnalyzer {
 		return GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex).getFilename();
 	}
 	
-	public int GetNumberOfNewMethodInFile(int fileIndex){		
+	private List<Operation> getActions(int fileIndex) {
 		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 
 		String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + GetTargetBranchName() + "/" + fileDetail.getFilename(); 
@@ -144,46 +141,253 @@ public class SpoonPRAnalyzer {
 		}
 		
 		try {			
-			before = new URL(beforeUrl).openStream();
-			after = new URL(afterUrl).openStream();
-			
-			FileOutputStream out = new FileOutputStream(fileBefore);
-		    IOUtils.copy(before, out);
-		    
-		    FileOutputStream out2 = new FileOutputStream(fileAfter);
-		    IOUtils.copy(after, out2);
+			if(!fileDetail.getStatus().equals("added")) {
+				before = new URL(beforeUrl).openStream();
+				after = new URL(afterUrl).openStream();
+				
+				FileOutputStream out = new FileOutputStream(fileBefore);
+			    IOUtils.copy(before, out);
+			    
+			    FileOutputStream out2 = new FileOutputStream(fileAfter);
+			    IOUtils.copy(after, out2);
+			} else {
+				after = new URL(afterUrl).openStream();
+				
+				FileOutputStream out = new FileOutputStream(fileBefore);
+			    IOUtils.copy(new ByteArrayInputStream(" ".getBytes(StandardCharsets.UTF_8)), out);
+			    
+			    FileOutputStream out2 = new FileOutputStream(fileAfter);
+			    IOUtils.copy(after, out2);
+			}
 		
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		int count = 0;
 		
 		AstComparator diff = new AstComparator();
 		Diff differences = null;
 		try {
 			differences = diff.compare(fileBefore, fileAfter);
+			fileBefore.delete();
+			fileAfter.delete();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		List<Operation> actions = differences.getRootOperations();
+		return differences.getRootOperations();
+	}
+	
+	public int GetNumberOfNewMethodInFile(int fileIndex){		
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
-			CtElement test = a.getNode();
 			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) count++;
 		}
-		
-		//Liste d'opérations
-		//UpdateOperation
-		//InsertOperation
-		//DeleteOperation
-		//MoveOperation
-		
-
 		
 		return count;
 	}
 	
+	public String GetNewMethodPrototype(int fileIndex, int methodIndex){
+		int count = 0;	
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			CtElement test = a.getNode();
+			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) {
+				if(count == methodIndex) {
+					CtMethodImpl method = (CtMethodImpl)a.getNode();
+					return method.getSignature();
+				}
+				count++;
+			}
+		}
+		
+		return "Error";
+	}
+	
+	public int GetNumberOfDeletedMethodInFile(int fileIndex){
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) count++;
+		}
+		
+		return count;
+	}
+	
+	public String GetDeletedMethodPrototype(int fileIndex, int methodIndex){
+		int count = 0;	
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			CtElement test = a.getNode();
+			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) {
+				if(count == methodIndex) {
+					CtMethodImpl method = (CtMethodImpl)a.getNode();
+					return method.getSimpleName();
+				}
+				count++;
+			}
+		}
+		
+		return "Error";
+	}
+	
+	public int GetNumberOfNewTestInFile(int fileIndex){
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) {
+				List<CtAnnotation<? extends Annotation>> annotations = a.getNode().getAnnotations();
+				
+				for(CtAnnotation<? extends Annotation> annotation : annotations) {
+					if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) count++;
+				}
+			}
+		}
+		
+		return count;
+	}
+	
+	public String GetNewTestPrototype(int fileIndex, int methodIndex){
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) {
+				List<CtAnnotation<? extends Annotation>> annotations = a.getNode().getAnnotations();
+				
+				for(CtAnnotation<? extends Annotation> annotation : annotations) {
+					if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) {
+						if(count == methodIndex) {
+							CtMethodImpl method = (CtMethodImpl)a.getNode();
+							return method.getSimpleName();
+						}
+						count++;
+					}
+				}
+			}
+		}
+		
+		return "Error";
+	}
+	
+	public int GetNumberOfDeletedTestInFile(int fileIndex){
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) {
+				List<CtAnnotation<? extends Annotation>> annotations = a.getNode().getAnnotations();
+				
+				for(CtAnnotation<? extends Annotation> annotation : annotations) {
+					if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) count++;
+				}
+			}
+		}
+		
+		return count;
+	}
+	
+	public String GetDeletedTestPrototype(int fileIndex, int methodIndex){
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) {
+				List<CtAnnotation<? extends Annotation>> annotations = a.getNode().getAnnotations();
+				
+				for(CtAnnotation<? extends Annotation> annotation : annotations) {
+					if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) {
+						if(count == methodIndex) {
+							CtMethodImpl method = (CtMethodImpl)a.getNode();
+							return method.getSimpleName();
+						}
+						count++;
+					}
+				}
+			}
+		}
+		
+		return "Error";
+	}
+	
+	public int GetNumberOfNewCommentsInFile(int fileIndex){
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			if(a.getNode() instanceof CtCommentImpl && a instanceof InsertOperation) {
+				if(a.getNode().getComments().size() > 0) count++;				
+			}
+		}
+		
+		return count;
+	}
+	
+	public int GetNumberOfDeletedCommentsInFile(int fileIndex){
+		int count = 0;		
+		List<Operation> actions = getActions(fileIndex);		
+		
+		for(Operation a : actions) {
+			if(a.getNode() instanceof CtCommentImpl && a instanceof DeleteOperation) {
+				if(a.getNode().getComments().size() > 0) count++;	
+			}
+		}
+		
+		return count;
+	}
+	
+	public int GetNumberOfModifiedMethodsInFile(int fileIndex) {
+		List<Operation> actions = getActions(fileIndex);
+		List<String> modifiedMethods = new ArrayList<String>();
+		
+		for(Operation a : actions) {
+			CtElement parent = a.getNode();
+			
+			while(!(parent instanceof CtMethodImpl)) {
+				parent = parent.getParent();
+				if(parent == null) break;
+			}
+			
+			if(parent == null) continue;	
+			
+			if(parent instanceof CtMethodImpl) {
+				if(modifiedMethods.indexOf(((CtMethodImpl)parent).getSignature()) == -1) {
+					modifiedMethods.add(((CtMethodImpl)parent).getSignature());
+				}
+			}
+		}
+		
+		return modifiedMethods.size();
+	}
+	
+	public String GetModifiedMethodPrototype(int fileIndex, int methodIndex){
+		List<Operation> actions = getActions(fileIndex);
+		List<String> modifiedMethods = new ArrayList<String>();
+		
+		for(Operation a : actions) {
+ 			CtElement parent = a.getNode();
+			
+			while(!(parent instanceof CtMethodImpl)) {
+				parent = parent.getParent();
+				if(parent == null) break;
+			}
+			
+			if(parent == null) continue;			
+			
+			if(parent instanceof CtMethodImpl) {
+				if(modifiedMethods.indexOf(((CtMethodImpl)parent).getSignature()) == -1) {
+					modifiedMethods.add(((CtMethodImpl)parent).getSignature());
+					if(modifiedMethods.size()-1 == methodIndex) return modifiedMethods.get(modifiedMethods.size()-1);
+				}
+			}
+		}
+		
+		return "Error";
+	}
 	
 }

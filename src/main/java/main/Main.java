@@ -23,11 +23,23 @@ public class Main {
 		
 		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/spoon");
 		
-		int indexPR = 1;
+		int fileIndex = 2, indexMethod = 0;
 		
 		System.out.println("Nombre de pull request 					: " + analyzer.GetNumberOfPullRequests());
-		System.out.println("New methodes in file 1			: " + analyzer.GetNumberOfNewMethodInFile(indexPR));
+		System.out.println("Nom du fichier d'index 1 				: " + analyzer.GetFileName(fileIndex));
+		System.out.println("Nombre de nouvelle méthode				: " + analyzer.GetNumberOfNewMethodInFile(fileIndex));
+		System.out.println("Nom de la nouvelle méthode d'index 0			: " + analyzer.GetNewMethodPrototype(fileIndex, indexMethod));
+		System.out.println("Nombre de méthode supprimée				: " + analyzer.GetNumberOfDeletedMethodInFile(fileIndex));
+		System.out.println("Nombre de commentaire ajouté				: " + analyzer.GetNumberOfNewCommentsInFile(fileIndex));
+		System.out.println("Nombre de commentaire supprimé				: " + analyzer.GetNumberOfDeletedCommentsInFile(fileIndex));
 		
+		System.out.println("Nombre de nouveaux test					: " + analyzer.GetNumberOfNewTestInFile(fileIndex));
+		System.out.println("Nom du nouveau test d'index 0				: " + analyzer.GetNewTestPrototype(fileIndex, indexMethod));
+		System.out.println("Nombre de test supprimé					: " + analyzer.GetNumberOfDeletedTestInFile(fileIndex));
+		
+		System.out.println("Nombre de méthodes modifiées				: " + analyzer.GetNumberOfModifiedMethodsInFile(fileIndex));
+		System.out.println("Nom de la méthode modifiée d'index 0			: " + analyzer.GetModifiedMethodPrototype(fileIndex, 0));
+		System.out.println("Nom de la méthode modifiée d'index 1			: " + analyzer.GetModifiedMethodPrototype(fileIndex, 1));	
 		
 		/*PRAnalyzer analyzer = new PRAnalyzer("LucasDelvallet/PRSummary");
 		
