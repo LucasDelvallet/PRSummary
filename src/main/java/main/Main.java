@@ -22,8 +22,8 @@ public class Main {
 		//botbotbibot.Start();
 		
 
-		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/spoon");
-		//SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("LucasDelvallet/PRSummary");
+		//SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/Spoon");
+		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("LucasDelvallet/PRSummary");
 		analyzer.StartAnalysisOfRepo();		
 		
 

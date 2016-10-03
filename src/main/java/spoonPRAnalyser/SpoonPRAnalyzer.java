@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHPullRequestFileDetail;
@@ -40,7 +41,7 @@ public class SpoonPRAnalyzer {
 		
 			repo = github.getRepository(repoName);
 			
-			pullRequests = repo.getPullRequests(GHIssueState.CLOSED);
+			pullRequests = repo.getPullRequests(GHIssueState.ALL);
 			filesDetails = new HashMap<GHPullRequest, List<GHPullRequestFileDetail>>();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -180,7 +181,17 @@ public class SpoonPRAnalyzer {
 			}
 		}
 		
-		String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + GetTargetBranchName() + "/" + fileDetail.getFilename(); 
+		//String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + pullRequests.get(pullRequestIndex).getBase().getSha() + "/" + fileDetail.getFilename();
+		//String afterUrl = fileDetail.getRawUrl().toString();
+		String mergeSHA = "";
+		try {
+				GHCompare comp = repo.getCompare(GetSourceBranchName(), GetTargetBranchName());
+				mergeSHA = comp.getMergeBaseCommit().getSHA1();
+		} catch (IOException e2) {
+			  e2.printStackTrace();
+		}
+				
+		String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + mergeSHA + "/" + fileDetail.getFilename(); 
 		String afterUrl = fileDetail.getRawUrl().toString();
 		
 		InputStream before, after;
