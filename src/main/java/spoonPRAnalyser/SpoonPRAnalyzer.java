@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
@@ -183,6 +185,10 @@ public class SpoonPRAnalyzer {
 		
 		for(Operation a : actions) {
 			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) count++;
+			if(a.getNode() instanceof CtClassImpl && a instanceof InsertOperation) {
+				Set<CtMethodImpl> c = ((CtClassImpl)a.getNode()).getAllMethods();
+				count += c.size();
+			}
 		}
 		
 		return count;
@@ -193,13 +199,24 @@ public class SpoonPRAnalyzer {
 		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
-			CtElement test = a.getNode();
+			
 			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) {
 				if(count == methodIndex) {
 					CtMethodImpl method = (CtMethodImpl)a.getNode();
 					return method.getSignature();
 				}
 				count++;
+			}
+			
+			if(a.getNode() instanceof CtClassImpl && a instanceof InsertOperation) {
+				Set<CtMethodImpl> c = ((CtClassImpl)a.getNode()).getAllMethods();
+				
+				for (CtMethodImpl method : c) {
+					if(count == methodIndex) {
+						return method.getSignature();
+					}
+					count++;
+				}
 			}
 		}
 		
@@ -212,6 +229,10 @@ public class SpoonPRAnalyzer {
 		
 		for(Operation a : actions) {
 			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) count++;
+			if(a.getNode() instanceof CtClassImpl && a instanceof DeleteOperation) {
+				Set c = ((CtClassImpl)a.getNode()).getAllMethods();
+				count += c.size();
+			}
 		}
 		
 		return count;
@@ -230,6 +251,16 @@ public class SpoonPRAnalyzer {
 				}
 				count++;
 			}
+			if(a.getNode() instanceof CtClassImpl && a instanceof DeleteOperation) {
+				Set<CtMethodImpl> c = ((CtClassImpl)a.getNode()).getAllMethods();
+				
+				for (CtMethodImpl method : c) {
+					if(count == methodIndex) {
+						return method.getSignature();
+					}
+					count++;
+				}
+			}
 		}
 		
 		return "Error";
@@ -240,11 +271,23 @@ public class SpoonPRAnalyzer {
 		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
+
 			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) {
 				List<CtAnnotation<? extends Annotation>> annotations = a.getNode().getAnnotations();
 				
 				for(CtAnnotation<? extends Annotation> annotation : annotations) {
 					if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) count++;
+				}
+			}
+			
+			if(a.getNode() instanceof CtClassImpl && a instanceof InsertOperation) {
+				Set<CtMethodImpl> methods = ((CtClassImpl)a.getNode()).getAllMethods();
+				for (CtMethodImpl method : methods) {
+					List<CtAnnotation<? extends Annotation>> annotations = method.getAnnotations();
+
+					for(CtAnnotation<? extends Annotation> annotation : annotations) {
+						if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) count++;
+					}
 				}
 			}
 		}
@@ -270,6 +313,23 @@ public class SpoonPRAnalyzer {
 					}
 				}
 			}
+			
+			if(a.getNode() instanceof CtClassImpl && a instanceof InsertOperation) {
+				Set<CtMethodImpl> methods = ((CtClassImpl)a.getNode()).getAllMethods();
+				for (CtMethodImpl method : methods) {
+					List<CtAnnotation<? extends Annotation>> annotations = method.getAnnotations();
+
+					for(CtAnnotation<? extends Annotation> annotation : annotations) {
+						if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) {
+							if(count == methodIndex) {
+								CtMethodImpl m = (CtMethodImpl)a.getNode();
+								return method.getSimpleName();
+							}
+							count++;
+						}
+					}
+				}
+			}
 		}
 		
 		return "Error";
@@ -285,6 +345,17 @@ public class SpoonPRAnalyzer {
 				
 				for(CtAnnotation<? extends Annotation> annotation : annotations) {
 					if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) count++;
+				}
+			}
+			
+			if(a.getNode() instanceof CtClassImpl && a instanceof DeleteOperation) {
+				Set<CtMethodImpl> methods = ((CtClassImpl)a.getNode()).getAllMethods();
+				for (CtMethodImpl method : methods) {
+					List<CtAnnotation<? extends Annotation>> annotations = method.getAnnotations();
+
+					for(CtAnnotation<? extends Annotation> annotation : annotations) {
+						if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) count++;
+					}
 				}
 			}
 		}
@@ -310,6 +381,24 @@ public class SpoonPRAnalyzer {
 					}
 				}
 			}
+			
+			if(a.getNode() instanceof CtClassImpl && a instanceof DeleteOperation) {
+				Set<CtMethodImpl> methods = ((CtClassImpl)a.getNode()).getAllMethods();
+				for (CtMethodImpl method : methods) {
+					List<CtAnnotation<? extends Annotation>> annotations = method.getAnnotations();
+
+					for(CtAnnotation<? extends Annotation> annotation : annotations) {
+						if(annotation.getSignature().contains("Test") || annotation.getSignature().contains("test")) {
+							if(count == methodIndex) {
+								CtMethodImpl m = (CtMethodImpl)a.getNode();
+								return method.getSimpleName();
+							}
+							count++;
+						}
+					}
+				}
+			}
+			
 		}
 		
 		return "Error";
