@@ -12,7 +12,7 @@ public abstract class SpoonBot{
 	
 	public void Start(){
 		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer(repoName);
-		analyzer.Start(this);
+		analyzer.StartAnalysisOfRepo();
 	}
 
 	public abstract String BuildMessage(SpoonPRAnalyzer analyzer);

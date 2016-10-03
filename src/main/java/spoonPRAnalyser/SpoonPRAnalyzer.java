@@ -46,39 +46,71 @@ public class SpoonPRAnalyzer {
 		
 			repo = github.getRepository(repoName);
 			
-			pullRequests = repo.getPullRequests(GHIssueState.OPEN);
+			pullRequests = repo.getPullRequests(GHIssueState.CLOSED);
 			filesDetails = new HashMap<GHPullRequest, List<GHPullRequestFileDetail>>();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void Start(SpoonBot spoonBot){
-		while(true){
-			try {
-				System.out.println("Fetching PRs.");
-				pullRequests = repo.getPullRequests(GHIssueState.OPEN);
-				int cpt = 0;
-				for(GHPullRequest PR : pullRequests){
-					pullRequestIndex = cpt;
-					if (new Date().getTime() - PR.getCreatedAt().getTime() <= 10000) {
-						System.out.println("	New PR detected : adding bot comment");
-						String msg = "------This is an automatic message------\r\n\r\n" ;
-						msg += spoonBot.BuildMessage(this);
-						PR.comment(msg);
-					}else{
-						System.out.println("	Old PR detected. Nothing to do.");
-					}
-					cpt++;
-				}
+	public void StartAnalysisOfRepo(){
+		int cpt = 0;
+		int nbFilesTotal = 0;
+		int nbNewMethodTotal = 0;
+		int nbDeletedMethodTotal = 0;
+		int nbModifiedMethodTotal = 0;
+		int nbNewTestTotal = 0;
+		int nbDeletedTestTotal = 0;
 				
-				System.out.println("Waiting 10 secs.");
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+				
+		for(GHPullRequest PR : pullRequests){
+			pullRequestIndex = cpt;
+				
+			System.out.println("==== PR index : " + cpt + "/" + pullRequests.size());
+			
+			int nbFiles = GetNumberOfJavaFiles();
+			int nbNewMethod = 0;
+			int nbDeletedMethod = 0;
+			int nbModifiedMethod = 0;
+			int nbNewTest = 0;
+			int nbDeletedTest = 0;
+				
+			int i = 0;
+			for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
+				if(a.getFilename().endsWith(".java")){
+					nbNewMethod += GetNumberOfNewMethodInFile(i);
+					nbDeletedMethod += GetNumberOfDeletedMethodInFile(i);
+					nbModifiedMethod += GetNumberOfModifiedMethodsInFile(i);
+					nbNewTest += GetNumberOfNewTestInFile(i);
+					nbDeletedTest += GetNumberOfDeletedTestInFile(i);
+				}
 			}
+				
+			System.out.println("    Nombre de fichier modifié/supprimé/ajouté : " + nbFiles);
+			System.out.println("    Nombre de méthodes ajoutées : " + nbNewMethod);
+			System.out.println("    Nombre de méthodes supprimées : " + nbDeletedMethod);
+			System.out.println("    Nombre de méthodes modifiées : " + nbModifiedMethod);
+			System.out.println("    Nombre de test ajoutés : " + nbNewTest);
+			System.out.println("    Nombre de test supprimés : " + nbDeletedTest);
+				
+
+				
+			nbFilesTotal += nbFiles;
+			nbNewMethodTotal += nbNewMethod;
+			nbDeletedMethodTotal += nbDeletedMethod;
+			nbModifiedMethodTotal += nbModifiedMethod;
+			nbNewTestTotal += nbNewTest;
+			nbDeletedTestTotal += nbDeletedTest;
+				
+			System.out.println("---- Total");
+			System.out.println("    Total nombre de fichier modifié/supprimé/ajouté : " + nbFilesTotal + "  Moyenne : " + nbFilesTotal/(cpt+1));
+			System.out.println("    Total nombre de méthodes ajoutées : " + nbNewMethodTotal  + "  Moyenne : " + nbNewMethodTotal/(cpt+1));
+			System.out.println("    Total nombre de méthodes supprimées : " + nbDeletedMethodTotal + "  Moyenne : " + nbDeletedMethodTotal/(cpt+1));
+			System.out.println("    Total nombre de méthodes modifiées : " + nbModifiedMethodTotal + "  Moyenne : " + nbModifiedMethodTotal/(cpt+1));
+			System.out.println("    Total nombre de test ajoutés : " + nbNewTestTotal + "  Moyenne : " + nbNewTestTotal/(cpt+1));
+			System.out.println("    Total nombre de test supprimés : " + nbDeletedTestTotal + "  Moyenne : " + nbDeletedTestTotal/(cpt+1));
+			System.out.println("");
+			cpt++;
 		}
 	}
 	
@@ -117,16 +149,43 @@ public class SpoonPRAnalyzer {
 		return pullRequests.size();
 	}
 	
-	public int GetNumberOfFiles(){
-		return GetFiles(pullRequests.get(pullRequestIndex)).size();
+	public int GetNumberOfJavaFiles(){
+		int cpt = 0;
+		for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
+			if(a.getFilename().endsWith(".java")){
+				cpt++;
+			}
+		}
+		return cpt;
 	}
 	
 	public String GetFileName(int fileIndex){
-		return GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex).getFilename();
+		int cpt = 0;
+		for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
+			if(a.getFilename().endsWith(".java")){
+				if(cpt == fileIndex){
+					return a.getFilename();
+				}
+				
+				cpt++;
+			}
+		}
+		return "Error";
 	}
 	
 	private List<Operation> getActions(int fileIndex) {
-		GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
+		GHPullRequestFileDetail fileDetail = null;
+		int cpt = 0;
+		for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
+			if(a.getFilename().endsWith(".java")){
+				if(cpt == fileIndex){
+					fileDetail =  a;
+				}
+				
+				cpt++;
+			}
+		}
+		//GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
 
 		String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + GetTargetBranchName() + "/" + fileDetail.getFilename(); 
 		String afterUrl = fileDetail.getRawUrl().toString();

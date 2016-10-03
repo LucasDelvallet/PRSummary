@@ -13,7 +13,7 @@ public class Exemple1SpoonBot extends SpoonBot {
 		String msg = "";
 		
 		int nbNewMethod = 0;
-		for(int i = 0; i < analyzer.GetNumberOfFiles(); i++){
+		for(int i = 0; i < analyzer.GetNumberOfJavaFiles(); i++){
 			nbNewMethod += analyzer.GetNumberOfNewMethodInFile(i);
 		}
 		
