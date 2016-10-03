@@ -492,6 +492,8 @@ public class SpoonPRAnalyzer {
 		List<String> modifiedMethods = new ArrayList<String>();
 		
 		for(Operation a : actions) {
+			if(!(a instanceof UpdateOperation)) continue;
+			
 			CtElement parent = a.getNode();
 			
 			while(!(parent instanceof CtMethodImpl)) {
@@ -515,6 +517,8 @@ public class SpoonPRAnalyzer {
 		List<String> modifiedMethods = new ArrayList<String>();
 		
 		for(Operation a : actions) {
+			if(!(a instanceof UpdateOperation)) continue;
+			
  			CtElement parent = a.getNode();
 			
 			while(!(parent instanceof CtMethodImpl)) {
