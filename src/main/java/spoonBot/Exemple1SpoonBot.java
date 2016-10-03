@@ -14,7 +14,8 @@ public class Exemple1SpoonBot extends SpoonBot {
 		
 		int nbNewMethod = 0;
 		for(int i = 0; i < analyzer.GetNumberOfJavaFiles(); i++){
-			nbNewMethod += analyzer.GetNumberOfNewMethodInFile(i);
+			analyzer.getActions(i);
+			nbNewMethod += analyzer.GetNumberOfNewMethodInFile();
 		}
 		
 		int nbCommit = analyzer.GetNumberOfCommit();

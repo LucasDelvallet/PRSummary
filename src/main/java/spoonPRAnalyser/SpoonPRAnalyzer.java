@@ -9,7 +9,6 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -25,20 +24,15 @@ import gumtree.spoon.AstComparator;
 import gumtree.spoon.diff.Diff;
 import gumtree.spoon.diff.operations.*;
 import spoon.reflect.declaration.*;
-import spoon.support.reflect.code.*;
 import spoon.support.reflect.declaration.*;
-import spoonBot.SpoonBot;
 
 public class SpoonPRAnalyzer {
-	
-	/*AstComparator diff = new AstComparator();
-	File fl = new File("src/test/resources/examples/test3/CommandLine1.java");
-	File fr = new File("src/test/resources/examples/test3/CommandLine2.java");*/
 
 	private GHRepository repo;
 	private List<GHPullRequest> pullRequests;
 	private HashMap<GHPullRequest, List<GHPullRequestFileDetail>> filesDetails;
 	private int pullRequestIndex = 0;
+	private List<Operation> actions;
 	
 	public SpoonPRAnalyzer(String repoName){
 		try {
@@ -62,11 +56,10 @@ public class SpoonPRAnalyzer {
 		int nbNewTestTotal = 0;
 		int nbDeletedTestTotal = 0;
 				
-				
 		for(GHPullRequest PR : pullRequests){
 			pullRequestIndex = cpt;
 				
-			System.out.println("==== PR index : " + cpt + "/" + pullRequests.size());
+			System.out.println("==== PR index : " + (cpt+1) + "/" + pullRequests.size());
 			
 			int nbFiles = GetNumberOfJavaFiles();
 			int nbNewMethod = 0;
@@ -78,11 +71,12 @@ public class SpoonPRAnalyzer {
 			int i = 0;
 			for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
 				if(a.getFilename().endsWith(".java")){
-					nbNewMethod += GetNumberOfNewMethodInFile(i);
-					nbDeletedMethod += GetNumberOfDeletedMethodInFile(i);
-					nbModifiedMethod += GetNumberOfModifiedMethodsInFile(i);
-					nbNewTest += GetNumberOfNewTestInFile(i);
-					nbDeletedTest += GetNumberOfDeletedTestInFile(i);
+					getActions(i);
+					nbNewMethod += GetNumberOfNewMethodInFile();
+					nbDeletedMethod += GetNumberOfDeletedMethodInFile();
+					nbModifiedMethod += GetNumberOfModifiedMethodsInFile();
+					nbNewTest += GetNumberOfNewTestInFile();
+					nbDeletedTest += GetNumberOfDeletedTestInFile();
 				}
 			}
 				
@@ -173,7 +167,7 @@ public class SpoonPRAnalyzer {
 		return "Error";
 	}
 	
-	private List<Operation> getActions(int fileIndex) {
+	public void getActions(int fileIndex) {
 		GHPullRequestFileDetail fileDetail = null;
 		int cpt = 0;
 		for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
@@ -185,8 +179,7 @@ public class SpoonPRAnalyzer {
 				cpt++;
 			}
 		}
-		//GHPullRequestFileDetail fileDetail = GetFiles(pullRequests.get(pullRequestIndex)).get(fileIndex);
-
+		
 		String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + GetTargetBranchName() + "/" + fileDetail.getFilename(); 
 		String afterUrl = fileDetail.getRawUrl().toString();
 		
@@ -235,12 +228,11 @@ public class SpoonPRAnalyzer {
 			e.printStackTrace();
 		}
 		
-		return differences.getRootOperations();
+		actions = differences.getRootOperations();
 	}
 	
-	public int GetNumberOfNewMethodInFile(int fileIndex){		
-		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
+	public int GetNumberOfNewMethodInFile(){		
+		int count = 0;
 		
 		for(Operation a : actions) {
 			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) count++;
@@ -253,9 +245,8 @@ public class SpoonPRAnalyzer {
 		return count;
 	}
 	
-	public String GetNewMethodPrototype(int fileIndex, int methodIndex){
-		int count = 0;	
-		List<Operation> actions = getActions(fileIndex);		
+	public String GetNewMethodPrototype(int methodIndex){
+		int count = 0;		
 		
 		for(Operation a : actions) {
 			
@@ -282,9 +273,8 @@ public class SpoonPRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfDeletedMethodInFile(int fileIndex){
+	public int GetNumberOfDeletedMethodInFile(){
 		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
 			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) count++;
@@ -297,9 +287,8 @@ public class SpoonPRAnalyzer {
 		return count;
 	}
 	
-	public String GetDeletedMethodPrototype(int fileIndex, int methodIndex){
-		int count = 0;	
-		List<Operation> actions = getActions(fileIndex);		
+	public String GetDeletedMethodPrototype(int methodIndex){
+		int count = 0;		
 		
 		for(Operation a : actions) {
 			CtElement test = a.getNode();
@@ -325,9 +314,8 @@ public class SpoonPRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfNewTestInFile(int fileIndex){
-		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
+	public int GetNumberOfNewTestInFile(){
+		int count = 0;	
 		
 		for(Operation a : actions) {
 
@@ -354,9 +342,8 @@ public class SpoonPRAnalyzer {
 		return count;
 	}
 	
-	public String GetNewTestPrototype(int fileIndex, int methodIndex){
+	public String GetNewTestPrototype(int methodIndex){
 		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
 			if(a.getNode() instanceof CtMethodImpl && a instanceof InsertOperation) {
@@ -394,9 +381,8 @@ public class SpoonPRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfDeletedTestInFile(int fileIndex){
+	public int GetNumberOfDeletedTestInFile(){
 		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
 			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) {
@@ -422,9 +408,8 @@ public class SpoonPRAnalyzer {
 		return count;
 	}
 	
-	public String GetDeletedTestPrototype(int fileIndex, int methodIndex){
-		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
+	public String GetDeletedTestPrototype(int methodIndex){
+		int count = 0;	
 		
 		for(Operation a : actions) {
 			if(a.getNode() instanceof CtMethodImpl && a instanceof DeleteOperation) {
@@ -463,9 +448,8 @@ public class SpoonPRAnalyzer {
 		return "Error";
 	}
 	
-	public int GetNumberOfNewCommentsInFile(int fileIndex){
-		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
+	public int GetNumberOfNewCommentsInFile(){
+		int count = 0;
 		
 		for(Operation a : actions) {
 			if(a instanceof InsertOperation) {
@@ -479,9 +463,8 @@ public class SpoonPRAnalyzer {
 		return count;
 	}
 	
-	public int GetNumberOfDeletedCommentsInFile(int fileIndex){
+	public int GetNumberOfDeletedCommentsInFile(){
 		int count = 0;		
-		List<Operation> actions = getActions(fileIndex);		
 		
 		for(Operation a : actions) {
 			if(a instanceof DeleteOperation) {
@@ -494,8 +477,7 @@ public class SpoonPRAnalyzer {
 		return count;
 	}
 	
-	public int GetNumberOfModifiedMethodsInFile(int fileIndex) {
-		List<Operation> actions = getActions(fileIndex);
+	public int GetNumberOfModifiedMethodsInFile() {
 		List<String> modifiedMethods = new ArrayList<String>();
 		
 		for(Operation a : actions) {
@@ -518,8 +500,7 @@ public class SpoonPRAnalyzer {
 		return modifiedMethods.size();
 	}
 	
-	public String GetModifiedMethodPrototype(int fileIndex, int methodIndex){
-		List<Operation> actions = getActions(fileIndex);
+	public String GetModifiedMethodPrototype(int methodIndex){
 		List<String> modifiedMethods = new ArrayList<String>();
 		
 		for(Operation a : actions) {
