@@ -70,6 +70,7 @@ public class SpoonPRAnalyzer {
 							
 						int i = 0;
 						for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
+							if(GetFiles(pullRequests.get(pullRequestIndex)) == null) continue;
 							if(a.getFilename().endsWith(".java")){
 								getActions(i);
 								nbNewMethod += GetNumberOfNewMethodInFile();
@@ -130,6 +131,7 @@ public class SpoonPRAnalyzer {
 				
 			int i = 0;
 			for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
+				if(GetFiles(pullRequests.get(pullRequestIndex)) == null) continue;
 				if(a.getFilename().endsWith(".java")){
 					getActions(i);
 					nbNewMethod += GetNumberOfNewMethodInFile();
