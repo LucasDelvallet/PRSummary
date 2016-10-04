@@ -22,11 +22,20 @@ public class Main {
 		//botbotbibot.Start();
 		
 
-		//SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/Spoon");
-		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("LucasDelvallet/PRSummary");
+		long tStart = System.currentTimeMillis();
+		
+		SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/Spoon");
+		//SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("LucasDelvallet/PRSummary");
 		analyzer.StartAnalysisOfRepo();		
 		
-
+		long tEnd = System.currentTimeMillis();
+		long tDelta = tEnd - tStart;
+		double elapsedSeconds = tDelta / 1000.0;
+		
+		if(elapsedSeconds > 60 )
+			System.out.println("Minutes écoulées : " + (elapsedSeconds/60f));
+		else 
+			System.out.println("Secondes écoulées : " + elapsedSeconds);
 		
 		//SpoonPRAnalyzer analyzer = new SpoonPRAnalyzer("INRIA/spoon");
 		

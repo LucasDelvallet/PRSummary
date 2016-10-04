@@ -88,8 +88,6 @@ public class SpoonPRAnalyzer {
 			System.out.println("    Nombre de test ajoutés : " + nbNewTest);
 			System.out.println("    Nombre de test supprimés : " + nbDeletedTest);
 				
-
-				
 			nbFilesTotal += nbFiles;
 			nbNewMethodTotal += nbNewMethod;
 			nbDeletedMethodTotal += nbDeletedMethod;
@@ -98,12 +96,12 @@ public class SpoonPRAnalyzer {
 			nbDeletedTestTotal += nbDeletedTest;
 				
 			System.out.println("---- Total");
-			System.out.println("    Total nombre de fichier modifié/supprimé/ajouté : " + nbFilesTotal + "  Moyenne : " + nbFilesTotal/(cpt+1));
-			System.out.println("    Total nombre de méthodes ajoutées : " + nbNewMethodTotal  + "  Moyenne : " + nbNewMethodTotal/(cpt+1));
-			System.out.println("    Total nombre de méthodes supprimées : " + nbDeletedMethodTotal + "  Moyenne : " + nbDeletedMethodTotal/(cpt+1));
-			System.out.println("    Total nombre de méthodes modifiées : " + nbModifiedMethodTotal + "  Moyenne : " + nbModifiedMethodTotal/(cpt+1));
-			System.out.println("    Total nombre de test ajoutés : " + nbNewTestTotal + "  Moyenne : " + nbNewTestTotal/(cpt+1));
-			System.out.println("    Total nombre de test supprimés : " + nbDeletedTestTotal + "  Moyenne : " + nbDeletedTestTotal/(cpt+1));
+			System.out.println("    Total nombre de fichier modifié/supprimé/ajouté : " + nbFilesTotal + "  Moyenne : " + (float)nbFilesTotal/((float)cpt+1));
+			System.out.println("    Total nombre de méthodes ajoutées : " + nbNewMethodTotal  + "  Moyenne : " + (float)nbNewMethodTotal/((float)cpt+1));
+			System.out.println("    Total nombre de méthodes supprimées : " + nbDeletedMethodTotal + "  Moyenne : " + (float)nbDeletedMethodTotal/((float)cpt+1));
+			System.out.println("    Total nombre de méthodes modifiées : " + nbModifiedMethodTotal + "  Moyenne : " + (float)nbModifiedMethodTotal/((float)cpt+1));
+			System.out.println("    Total nombre de test ajoutés : " + nbNewTestTotal + "  Moyenne : " + (float)nbNewTestTotal/((float)cpt+1));
+			System.out.println("    Total nombre de test supprimés : " + nbDeletedTestTotal + "  Moyenne : " + (float)nbDeletedTestTotal/((float)cpt+1));
 			System.out.println("");
 			cpt++;
 		}
@@ -180,13 +178,13 @@ public class SpoonPRAnalyzer {
 				cpt++;
 			}
 		}
-		
-		//String beforeUrl = "https://raw.githubusercontent.com/" + repo.getFullName() + "/" + pullRequests.get(pullRequestIndex).getBase().getSha() + "/" + fileDetail.getFilename();
-		//String afterUrl = fileDetail.getRawUrl().toString();
+
 		String mergeSHA = "";
-		try {
-				GHCompare comp = repo.getCompare(GetSourceBranchName(), GetTargetBranchName());
-				mergeSHA = comp.getMergeBaseCommit().getSHA1();
+		GHCompare comp;
+		
+		try {					
+			comp = repo.getCompare(pullRequests.get(pullRequestIndex).getBase().getSha(), pullRequests.get(pullRequestIndex).getHead().getSha());
+			mergeSHA = comp.getMergeBaseCommit().getSHA1();
 		} catch (IOException e2) {
 			  e2.printStackTrace();
 		}
