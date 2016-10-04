@@ -1,5 +1,17 @@
 # PRSummary
 
+PRSummary is a program that scan pull-request to make an analysis of the modifications of the files. It indicate some metrics about the addition/deletion/modification of some elements in the code. It only work with java files for the moment !
+
+An exemple of message our program can make :
+```
+Number of java files modified/deleted/added : 5
+Number of method added : 7
+Number of method deleted : 1
+Number of method modified : 6
+Number of test added : 12
+Number of test deleted : 0
+```
+
 ## Installation
 If you want the program to launch correctly, you have to create a file nammed .github holding these informations : 
 ```
@@ -7,7 +19,7 @@ login=YourLogin
 password=YourPassword
 ```
 
-The file must be located in the user folrder, to know where the user folder is located, you can use this command : 
+The file must be located in the user folder, to know where the user folder is located, you can use this command : 
 
 - For Unix/Linux : echo $HOME
 - For Windows : echo %USERPROFILE%
@@ -26,7 +38,7 @@ The second mandatory argument **Mode** to the mode you want to launch PRSummary.
 - **Analysis** : This will launch a full analysis of all the PR of the repo.
 - **Bot** : This will launch a bot that will scan the newly added PR of the repo and add a metric message.
 
-An full example : 
+A full example : 
 ```
 java -jar PRSummary.jar LucasDelvallet/PRSummary Analysis
 ```
