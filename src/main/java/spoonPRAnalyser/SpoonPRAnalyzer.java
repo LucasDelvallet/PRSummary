@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,65 @@ public class SpoonPRAnalyzer {
 		}
 	}
 	
+	public void StartBot(){
+		while(true){
+			try {
+				System.out.println("Fetching PRs.");
+				pullRequests = repo.getPullRequests(GHIssueState.OPEN);
+				int cpt = 0;
+				for(GHPullRequest PR : pullRequests){
+					pullRequestIndex = cpt;
+					if (new Date().getTime() - PR.getCreatedAt().getTime() <= 10000) {
+						System.out.println("	New PR detected : adding bot comment");
+						String msg = "------This is an automatic message------\r\n\r\n" ;
+						
+						int nbFiles = GetNumberOfJavaFiles();
+						int nbNewMethod = 0;
+						int nbDeletedMethod = 0;
+						int nbModifiedMethod = 0;
+						int nbNewTest = 0;
+						int nbDeletedTest = 0;
+							
+						int i = 0;
+						for(GHPullRequestFileDetail a : GetFiles(pullRequests.get(pullRequestIndex))){
+							if(a.getFilename().endsWith(".java")){
+								getActions(i);
+								nbNewMethod += GetNumberOfNewMethodInFile();
+								nbDeletedMethod += GetNumberOfDeletedMethodInFile();
+								nbModifiedMethod += GetNumberOfModifiedMethodsInFile();
+								nbNewTest += GetNumberOfNewTestInFile();
+								nbDeletedTest += GetNumberOfDeletedTestInFile();
+							}
+						}
+							
+						msg += "    Number of java files modified/deleted/added : " + nbFiles + "\r\n";
+						msg += "    Number of method added : " + nbNewMethod + "\r\n";
+						msg += "    Number of method deleted : " + nbDeletedMethod + "\r\n";
+						msg += "    Number of method modified : " + nbModifiedMethod + "\r\n";
+						msg += "    Number of test added : " + nbNewTest + "\r\n";
+						msg += "    Number of test deleted : " + nbDeletedTest + "\r\n";
+						
+						
+						PR.comment(msg);
+					}else{
+						System.out.println("	Old PR detected. Nothing to do.");
+					}
+					cpt++;
+				}
+				
+				System.out.println("Waiting 10 secs.");
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void StartAnalysisOfRepo(){
+		long tStart = System.currentTimeMillis();
+		
 		int cpt = 0;
 		int nbFilesTotal = 0;
 		int nbNewMethodTotal = 0;
@@ -60,7 +119,7 @@ public class SpoonPRAnalyzer {
 		for(GHPullRequest PR : pullRequests){
 			pullRequestIndex = cpt;
 				
-			System.out.println("==== PR index : " + (cpt+1) + "/" + pullRequests.size());
+			System.out.println("==== PR n° : " + (cpt+1) + "/" + pullRequests.size());
 			
 			int nbFiles = GetNumberOfJavaFiles();
 			int nbNewMethod = 0;
@@ -81,12 +140,12 @@ public class SpoonPRAnalyzer {
 				}
 			}
 				
-			System.out.println("    Nombre de fichier modifié/supprimé/ajouté : " + nbFiles);
-			System.out.println("    Nombre de méthodes ajoutées : " + nbNewMethod);
-			System.out.println("    Nombre de méthodes supprimées : " + nbDeletedMethod);
-			System.out.println("    Nombre de méthodes modifiées : " + nbModifiedMethod);
-			System.out.println("    Nombre de test ajoutés : " + nbNewTest);
-			System.out.println("    Nombre de test supprimés : " + nbDeletedTest);
+			System.out.println("    Number of java files modified/deleted/added : " + nbFiles);
+			System.out.println("    Number of method added : " + nbNewMethod);
+			System.out.println("    Number of method deleted : " + nbDeletedMethod);
+			System.out.println("    Number of method modified : " + nbModifiedMethod);
+			System.out.println("    Number of test added : " + nbNewTest);
+			System.out.println("    Number of test deleted : " + nbDeletedTest);
 				
 			nbFilesTotal += nbFiles;
 			nbNewMethodTotal += nbNewMethod;
@@ -96,15 +155,24 @@ public class SpoonPRAnalyzer {
 			nbDeletedTestTotal += nbDeletedTest;
 				
 			System.out.println("---- Total");
-			System.out.println("    Total nombre de fichier modifié/supprimé/ajouté : " + nbFilesTotal + "  Moyenne : " + (float)nbFilesTotal/((float)cpt+1));
-			System.out.println("    Total nombre de méthodes ajoutées : " + nbNewMethodTotal  + "  Moyenne : " + (float)nbNewMethodTotal/((float)cpt+1));
-			System.out.println("    Total nombre de méthodes supprimées : " + nbDeletedMethodTotal + "  Moyenne : " + (float)nbDeletedMethodTotal/((float)cpt+1));
-			System.out.println("    Total nombre de méthodes modifiées : " + nbModifiedMethodTotal + "  Moyenne : " + (float)nbModifiedMethodTotal/((float)cpt+1));
-			System.out.println("    Total nombre de test ajoutés : " + nbNewTestTotal + "  Moyenne : " + (float)nbNewTestTotal/((float)cpt+1));
-			System.out.println("    Total nombre de test supprimés : " + nbDeletedTestTotal + "  Moyenne : " + (float)nbDeletedTestTotal/((float)cpt+1));
+			System.out.println("    Total number of java files modified/deleted/added : " + nbFilesTotal + "  Average : " + (float)nbFilesTotal/((float)cpt+1));
+			System.out.println("    Total number of method added : " + nbNewMethodTotal  + "  Average : " + (float)nbNewMethodTotal/((float)cpt+1));
+			System.out.println("    Total number of method deleted : " + nbDeletedMethodTotal + "  Average : " + (float)nbDeletedMethodTotal/((float)cpt+1));
+			System.out.println("    Total number of method modified : " + nbModifiedMethodTotal + "  Average : " + (float)nbModifiedMethodTotal/((float)cpt+1));
+			System.out.println("    Total number of test added : " + nbNewTestTotal + "  Average : " + (float)nbNewTestTotal/((float)cpt+1));
+			System.out.println("    Total number of test deleted : " + nbDeletedTestTotal + "  Average : " + (float)nbDeletedTestTotal/((float)cpt+1));
 			System.out.println("");
 			cpt++;
 		}
+		
+		long tEnd = System.currentTimeMillis();
+		long tDelta = tEnd - tStart;
+		double elapsedSeconds = tDelta / 1000.0;
+		
+		if(elapsedSeconds > 60 )
+			System.out.println("Minutes elapsed : " + (elapsedSeconds/60f));
+		else 
+			System.out.println("Seconds elapsed : " + elapsedSeconds);
 	}
 	
 
